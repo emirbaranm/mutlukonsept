@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MUTLU KONSEPT | Lüks Dekorasyon & Mimari</title>
+    <!-- Fontlar ve İkonlar -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- AOS Animasyon Kütüphanesi -->
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+
+    <style>
+        :root { --gold: #D4AF37; --black: #111111; --white: #F1F1F1; --gray: #1a1a1a; }
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Montserrat', sans-serif; }
+        
+        body { background-color: var(--black); color: var(--white); overflow-x: hidden; }
+
+        /* --- LOGO ANİMASYON AYARLARI --- */
+        .logo-container {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 2001; /* Nav'ın üstünde */
+            transition: all 0.8s cubic-bezier(0.7, 0, 0.3, 1);
+            width: 300px; /* İlk büyük hali */
+        }
+
+        .logo-container img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        /* Sayfa kayınca logonun geleceği hal */
+        .scrolled .logo-container {
+            top: 15px;
+            left: 5%;
+            transform: translate(0, 0);
+            width: 70px; /* Navigasyondaki küçük hali */
+        }
+
+        /* Diğer sayfalarda logo hep küçük kalsın */
+        .not-home .logo-container {
+            top: 15px;
+            left: 5%;
+            transform: translate(0, 0);
+            width: 70px;
+        }
+
+        /* --- SAYFA GEÇİŞ PERDESİ --- */
+        #page-transition {
+            position: fixed; top: 0; left: -100%; width: 100%; height: 100vh;
+            background: var(--gold); z-index: 9999;
+            display: flex; justify-content: center; align-items: center;
+            transition: 0.7s cubic-bezier(0.7, 0, 0.3, 1);
+        }
+        #page-transition h1 { color: #000; font-family: 'Playfair Display'; font-size: 3rem; letter-spacing: 10px; opacity: 0; }
+        #page-transition.active { left: 0; }
+        #page-transition.active h1 { opacity: 1; }
+
+        /* --- NAVIGASYON --- */
+        nav {
+            position: fixed; top: 0; width: 100%; padding: 20px 5%;
+            display: flex; justify-content: flex-end; /* Logo zaten container ile geliyor */
+            align-items: center;
+            z-index: 1000; background: rgba(17,17,17,0.95); border-bottom: 1px solid rgba(212,175,55,0.2);
+            height: 80px;
+        }
+        
+        .nav-links { display: flex; gap: 20px; align-items: center; }
+        .nav-links a { color: var(--white); text-decoration: none; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; cursor: pointer; transition: 0.3s; }
+        .nav-links a:hover { color: var(--gold); }
+        .lang-select { border-left: 1px solid var(--gold); padding-left: 15px; display: flex; gap: 8px; font-size: 10px; color: #888; }
+        .lang-select span:hover { color: var(--gold); cursor: pointer; }
+
+        /* --- GENEL SAYFA YAPISI --- */
+        .page { display: none; min-height: 100vh; padding-top: 80px; width: 100%; }
+        .active-page { display: block; }
+
+        /* --- ANA SAYFA (ZENGİN İÇERİK) --- */
+        .hero-section {
+            height: 100vh; width: 100%; position: relative;
+            display: flex; align-items: flex-end; justify-content: center; text-align: center;
+            overflow: hidden; margin-top: -80px; padding-bottom: 100px;
+        }
+        .hero-bg {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&q=80&w=1920');
+            background-size: cover; background-position: center; z-index: -1;
+        }
+        
+        .hero-content h1 { font-family: 'Playfair Display'; font-size: clamp(2.5rem, 8vw, 4rem); margin-bottom: 10px; }
+        .hero-content p { color: var(--gold); letter-spacing: 5px; text-transform: uppercase; font-size: 1rem; }
+
+        .home-info-section { padding: 100px 10%; text-align: center; }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 40px; margin-top: 50px; }
+        .stat-item h2 { color: var(--gold); font-size: 3rem; margin-bottom: 10px; }
+
+        /* --- HİZMETLER VE PROJELER GRİD --- */
+        .container { padding: 80px 8%; }
+        .section-title { text-align: center; font-family: 'Playfair Display'; font-size: 3rem; margin-bottom: 60px; }
+        .section-title span { color: var(--gold); }
+
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; }
+        .service-card { background: var(--gray); padding: 50px; border: 1px solid #222; text-align: center; transition: 0.5s; }
+        .service-card:hover { border-color: var(--gold); transform: translateY(-15px); }
+        .service-card i { font-size: 45px; color: var(--gold); margin-bottom: 25px; }
+
+        .project-card { position: relative; height: 450px; overflow: hidden; border: 1px solid #222; cursor: pointer; }
+        .project-card img { width: 100%; height: 100%; object-fit: cover; transition: 0.8s; }
+        .project-overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(17,17,17,0.9); display: flex; flex-direction: column; 
+            justify-content: center; align-items: center; opacity: 0; transition: 0.5s;
+        }
+        .project-card:hover img { transform: scale(1.1); }
+        .project-card:hover .project-overlay { opacity: 1; }
+        .project-overlay h3 { color: var(--gold); margin-bottom: 10px; }
+
+        /* --- YORUMLAR --- */
+        .testi-container { max-width: 900px; margin: 0 auto; }
+        .testi-item { background: var(--gray); padding: 40px; border-left: 5px solid var(--gold); margin-bottom: 30px; }
+        .testi-item p { font-style: italic; font-size: 1.1rem; line-height: 1.8; color: #ccc; }
+        .testi-item h4 { margin-top: 20px; color: var(--gold); letter-spacing: 2px; }
+
+        /* --- FOOTER --- */
+        footer { padding: 80px 8% 40px; background: #000; border-top: 1px solid var(--gold); }
+        .footer-logo { font-family: 'Playfair Display'; font-size: 28px; color: var(--gold); margin-bottom: 20px; display: block; }
+        .contact-link { display: block; color: var(--white); text-decoration: none; margin-bottom: 15px; transition: 0.3s; }
+        .contact-link:hover { color: var(--gold); }
+        .contact-link i { color: var(--gold); margin-right: 15px; }
+
+        /* Mobil */
+        @media (max-width: 768px) {
+            nav {
+                padding: 15px 4%;
+                height: auto;
+            }
+            .nav-links {
+                display: flex;
+                flex-wrap: wrap;
+                justify-content: center;
+                gap: 10px;
+            }
+            .nav-links a {
+                font-size: 10px;
+                padding: 8px 10px;
+                border: 1px solid rgba(212,175,55,0.2);
+                border-radius: 6px;
+                white-space: nowrap;
+            }
+            .lang-select {
+                border-left: none;
+                padding-left: 0;
+                font-size: 10px;
+                width: 100%;
+                justify-content: center;
+            }
+            .lang-select span {
+                display: inline-block;
+                padding: 6px 10px;
+                border: 1px solid rgba(212,175,55,0.2);
+                border-radius: 6px;
+                margin: 0 4px;
+            }
+            .hero-section {
+                height: auto;
+                min-height: 70vh;
+                padding-bottom: 70px;
+            }
+            .hero-content h1 { font-size: clamp(2rem, 10vw, 3rem); }
+            .home-info-section { padding: 60px 6%; }
+            .container { padding: 50px 6%; }
+            .grid { grid-template-columns: 1fr; }
+            .service-card { padding: 30px; }
+            .project-card { height: 300px; }
+            .testi-container { max-width: 100%; }
+            .testi-item { padding: 30px; }
+            footer { padding: 60px 6% 40px; }
+            .logo-container { width: 180px; }
+        }
+    </style>
+</head>
+<body id="body-tag">
+
+    <!-- SARI GEÇİŞ PERDESİ -->
+    <div id="page-transition">
+        <h1>MUTLU KONSEPT</h1>
+    </div>
+
+    <!-- LOGO CONTAINER -->
+    <div class="logo-container" id="main-logo">
+        <img src="logo.png" alt="MUTLU KONSEPT Logo" />
+        <!-- Yeni yüklenen logo dosyası eklendi, animasyonlar geri getirildi. -->
+    </div>
+
+    <!-- NAVIGASYON -->
+    <nav>
+        <div class="nav-links">
+            <a onclick="switchPage('home')" data-i18n="nav.home">Ana Sayfa</a>
+            <a onclick="switchPage('services')" data-i18n="nav.services">Hizmetler</a>
+            <a onclick="switchPage('projects')" data-i18n="nav.projects">Projelerimiz</a>
+            <a onclick="switchPage('reviews')" data-i18n="nav.reviews">Yorumlar</a>
+            <a onclick="switchPage('contact')" data-i18n="nav.contact">İletişim</a>
+            <div class="lang-select">
+                <span onclick="setLanguage('tr')">TR</span>|<span onclick="setLanguage('en')">EN</span>|<span onclick="setLanguage('ar')">AR</span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- ANA SAYFA -->
+    <section id="home" class="page active-page">
+        <div class="hero-section">
+            <div class="hero-bg"></div>
+            <div class="hero-content">
+                <h1 data-aos="fade-up" data-i18n="hero.title">LÜKSÜN MİMARİSİ</h1>
+                <p data-aos="fade-up" data-aos-delay="200" data-i18n="hero.subtitle">Hayallerinizi Altın Dokunuşlarla İnşa Ediyoruz</p>
+            </div>
+        </div>
+
+        <div class="home-info-section" data-aos="fade-up">
+            <h2 class="section-title" data-i18n="about.title">BİZ <span>KİMİZ?</span></h2>
+            <p style="max-width: 800px; margin: 0 auto; line-height: 2; color: #aaa;" data-i18n="about.text">
+                Mutlu Konsept, iç dekorasyon, alçı, boya ve asma tavan alanlarında Türkiye'nin en prestijli projelerine imza atmaktadır. Bizim için her duvar bir tuval, her tavan bir sanat eseridir.
+            </p>
+            
+            <div class="stats-grid">
+                <div class="stat-item"><h2>50+</h2><p data-i18n="stats.projects">Tamamlanan Proje</p></div>
+                <div class="stat-item"><h2>%100</h2><p data-i18n="stats.satisfaction">Müşteri Memnuniyeti</p></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- HİZMETLER -->
+    <section id="services" class="page">
+        <div class="container">
+            <h2 class="section-title" data-i18n="services.title">UZMANLIK <span>ALANLARIMIZ</span></h2>
+            <div class="grid">
+                <div class="service-card"><i class="fas fa-paint-roller"></i><h3 data-i18n="services.paint.title">Boya & İtalyan Boya</h3><p data-i18n="services.paint.text">Dekoratif İtalyan boya ve lüks renk kombinasyonları.</p></div>
+                <div class="service-card"><i class="fas fa-hammer"></i><h3 data-i18n="services.plaster.title">Alçı & Alçıpan</h3><p data-i18n="services.plaster.text">Kusursuz düzlükte yüzeyler ve bölme duvar sistemleri.</p></div>
+                <div class="service-card"><i class="fas fa-shapes"></i><h3 data-i18n="services.masonry.title">Duvarcılık</h3><p data-i18n="services.masonry.text">Sağlam mimari temeller ve estetik duvar örme.</p></div>
+                <div class="service-card"><i class="fas fa-border-all"></i><h3 data-i18n="services.ceiling.title">Asma Tavan</h3><p data-i18n="services.ceiling.text">Gizli ışık ve modern aydınlatma uyumlu tavanlar.</p></div>
+                <div class="service-card"><i class="fas fa-scroll"></i><h3 data-i18n="services.wallpaper.title">Duvar Kağıdı</h3><p data-i18n="services.wallpaper.text">Lüks dokulu, ithal ve dayanıklı duvar kaplamaları.</p></div>
+                <div class="service-card"><i class="fas fa-building"></i><h3 data-i18n="services.exterior.title">Dış Cephe</h3><p data-i18n="services.exterior.text">Isı yalıtımı ve modern dış cephe mantolama.</p></div>
+            </div>
+            <!-- Katalog İndirme Bölümü (Sadece HTML & Satır İçi CSS) -->
+            <div style="text-align: center; margin-top: 80px; padding: 50px 30px; background: var(--gray); border: 1px solid var(--gold); border-radius: 5px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);" data-aos="fade-up">
+                
+                <h3 style="font-family: 'Playfair Display'; font-size: 2.5rem; margin-bottom: 15px; color: var(--white);">
+                    Duvar Kağıdı <span style="color: var(--gold);">Kataloglarımız</span>
+                </h3>
+                
+                <p style="color: #aaa; margin-bottom: 30px; line-height: 1.8;">
+                    En yeni, ithal ve lüks duvar kağıdı koleksiyonlarımızı detaylı incelemek için PDF kataloglarımızı indirebilirsiniz.
+                </p>
+                
+                <div style="display: flex; justify-content: center; gap: 20px; flex-wrap: wrap;">
+
+                    <a href="roka.pdf" download style="background: var(--gold); color: var(--black); padding: 15px 30px; text-decoration: none; font-weight: bold; border-radius: 4px; display: flex; align-items: center; gap: 10px; font-size: 14px; cursor: pointer;">
+                        <i class="fas fa-file-pdf"></i> Roka Duvar Kağıdı Kataloğu
+                    </a>
+                    
+                    <a href="seven.pdf" download style="background: var(--gold); color: var(--black); padding: 15px 30px; text-decoration: none; font-weight: bold; border-radius: 4px; display: flex; align-items: center; gap: 10px; font-size: 14px; cursor: pointer;">
+                        <i class="fas fa-file-download"></i> Seven Duvar Kağıdı Kataloğu
+                    </a>
+
+                    <a href="vera.pdf" download style="background: var(--gold); color: var(--black); padding: 15px 30px; text-decoration: none; font-weight: bold; border-radius: 4px; display: flex; align-items: center; gap: 10px; font-size: 14px; cursor: pointer;">
+                        <i class="fas fa-file-download"></i> Vera Duvar Kağıdı Kataloğu
+                    </a>
+
+                    <a href="rina1.pdf" download style="background: var(--gold); color: var(--black); padding: 15px 30px; text-decoration: none; font-weight: bold; border-radius: 4px; display: flex; align-items: center; gap: 10px; font-size: 14px; cursor: pointer;">
+                        <i class="fas fa-file-download"></i> Rina 1 Duvar Kağıdı Kataloğu
+                    </a>
+
+                    <a href="rina2.pdf" download style="background: var(--gold); color: var(--black); padding: 15px 30px; text-decoration: none; font-weight: bold; border-radius: 4px; display: flex; align-items: center; gap: 10px; font-size: 14px; cursor: pointer;">
+                        <i class="fas fa-file-download"></i> Rina 2 Duvar Kağıdı Kataloğu
+                    </a>
+
+                    <a href="orlando.pdf" download style="background: var(--gold); color: var(--black); padding: 15px 30px; text-decoration: none; font-weight: bold; border-radius: 4px; display: flex; align-items: center; gap: 10px; font-size: 14px; cursor: pointer;">
+                        <i class="fas fa-file-download"></i> Orlando Duvar Kağıdı Kataloğu
+                    </a>
+
+                    <a href="decojunior.pdf" download style="background: var(--gold); color: var(--black); padding: 15px 30px; text-decoration: none; font-weight: bold; border-radius: 4px; display: flex; align-items: center; gap: 10px; font-size: 14px; cursor: pointer;">
+                        <i class="fas fa-file-download"></i> DecoJunior Duvar Kağıdı Kataloğu
+                    </a>
+
+                    <a href="armani.pdf" download style="background: var(--gold); color: var(--black); padding: 15px 30px; text-decoration: none; font-weight: bold; border-radius: 4px; display: flex; align-items: center; gap: 10px; font-size: 14px; cursor: pointer;">
+                        <i class="fas fa-file-download"></i> Armani Duvar Kağıdı Kataloğu
+                    </a>
+
+                    <a href="maki.pdf" download style="background: var(--gold); color: var(--black); padding: 15px 30px; text-decoration: none; font-weight: bold; border-radius: 4px; display: flex; align-items: center; gap: 10px; font-size: 14px; cursor: pointer;">
+                        <i class="fas fa-file-download"></i> Maki Duvar Kağıdı Kataloğu
+                    </a>
+
+                    <a href="orient.pdf" download style="background: var(--gold); color: var(--black); padding: 15px 30px; text-decoration: none; font-weight: bold; border-radius: 4px; display: flex; align-items: center; gap: 10px; font-size: 14px; cursor: pointer;">
+                        <i class="fas fa-file-download"></i> Orient Duvar Kağıdı Kataloğu
+                    </a>
+
+                    <a href="odessa.pdf" download style="background: var(--gold); color: var(--black); padding: 15px 30px; text-decoration: none; font-weight: bold; border-radius: 4px; display: flex; align-items: center; gap: 10px; font-size: 14px; cursor: pointer;">
+                        <i class="fas fa-file-download"></i> Odessa Duvar Kağıdı Kataloğu
+                    </a>
+
+                    <a href="retro.pdf" download style="background: var(--gold); color: var(--black); padding: 15px 30px; text-decoration: none; font-weight: bold; border-radius: 4px; display: flex; align-items: center; gap: 10px; font-size: 14px; cursor: pointer;">
+                        <i class="fas fa-file-download"></i> Retro Duvar Kağıdı Kataloğu
+                    </a>
+
+                    <a href="salda.pdf" download style="background: var(--gold); color: var(--black); padding: 15px 30px; text-decoration: none; font-weight: bold; border-radius: 4px; display: flex; align-items: center; gap: 10px; font-size: 14px; cursor: pointer;">
+                        <i class="fas fa-file-download"></i> Salda Duvar Kağıdı Kataloğu
+                    </a>
+
+                    <a href="tudor1.pdf" download style="background: var(--gold); color: var(--black); padding: 15px 30px; text-decoration: none; font-weight: bold; border-radius: 4px; display: flex; align-items: center; gap: 10px; font-size: 14px; cursor: pointer;">
+                        <i class="fas fa-file-download"></i> Tudor 1 Duvar Kağıdı Kataloğu
+                    </a>
+
+                    <a href="tudor2.pdf" download style="background: var(--gold); color: var(--black); padding: 15px 30px; text-decoration: none; font-weight: bold; border-radius: 4px; display: flex; align-items: center; gap: 10px; font-size: 14px; cursor: pointer;">
+                        <i class="fas fa-file-download"></i> Tudor 2 Duvar Kağıdı Kataloğu
+                    </a>
+
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- PROJELERİMİZ -->
+    <section id="projects" class="page">
+        <div class="container">
+            <h2 class="section-title">LÜKS <span>PROJELERİMİZ</span></h2>
+            <div class="grid">
+                <div class="project-card"><img src="proje1.png"><div class="project-overlay"><h3>BOŞ</h3></div></div>
+                <div class="project-card"><img src="proje2.png"><div class="project-overlay"><h3>BOŞ</h3></div></div>
+                <div class="project-card"><img src="proje3.png"><div class="project-overlay"><h3>BOŞ</h3></div></div>
+                <div class="project-card"><img src="proje4.png"><div class="project-overlay"><h3>BOŞ</h3></div></div>
+                <div class="project-card"><img src="proje5.png"><div class="project-overlay"><h3>BOŞ</h3></div></div>
+                <div class="project-card"><img src="proje6.png"><div class="project-overlay"><h3>BOŞ</h3></div></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- YORUMLAR -->
+    <section id="reviews" class="page">
+        <div class="container">
+            <h2 class="section-title" data-i18n="reviews.title">MÜŞTERİ <span>DENEYİMLERİ</span></h2>
+            <div class="testi-container">
+                <div class="testi-item">
+                    <p data-i18n="reviews.testimonial">"Mutlu Konsept ile çalışmak büyük bir ayrıcalıktı. Villamızın tavan ve boya işleri tam istediğimiz gibi lüks bir görünüme kavuştu."</p>
+                    <h4 data-i18n="reviews.author">Meral Akıncı - Villa Sahibi</h4>
+                </div>
+                <div class="testi-item">
+                    <p data-i18n="reviews.testimonial2">"Profesyonel ekip, hızlı dönüş ve kaliteli işçilik. Salonumuz tam istediğimiz gibi tasarlandı."</p>
+                    <h4 data-i18n="reviews.author2">Kerem Yılmaz - Rezidans Sahibi</h4>
+                </div>
+                <div class="testi-item">
+                    <p data-i18n="reviews.testimonial3">"Mutlu Konsept her ayrıntıyı düşündü. Yeni mutfak ve tavan tasarımımız beklediğimizden çok daha şık oldu."</p>
+                    <h4 data-i18n="reviews.author3">Fatma Öztürk - Daire Sahibi</h4>
+                </div>
+                <div class="testi-item">
+                    <p data-i18n="reviews.testimonial4">"İşlerinde titiz, iletişimleri güçlü ve teslimat süreci sorunsuzdu. Evimizde her köşe artık daha lüks görünüyor."</p>
+                    <h4 data-i18n="reviews.author4">Ali Deniz - Villa Sahibi</h4>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- İLETİŞİM -->
+    <section id="contact" class="page">
+        <div class="container">
+            <h2 class="section-title">BİZE <span>ULAŞIN</span></h2>
+            <div style="max-width: 800px; margin: 0 auto; background: var(--gray); padding: 60px; border: 1px solid var(--gold); text-align: center;">
+                <h3 style="margin-bottom: 30px; letter-spacing: 2px;">PROJENİZİ BAŞLATALIM</h3>
+                <p>Telefon: 0534 880 29 31</p>
+                <p>Instagram: @mutlu.konsept</p>
+                <P>Mail: mutlu.konseptt@gmail.com</P>
+                <p>Konya, Türkiye</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer>
+        <center>&copy; 2026 MUTLU KONSEPT. Tüm Hakları Saklıdır.</center>
+    </footer>
+
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script>
+        AOS.init();
+
+        const translations = {
+            tr: {
+                "nav.home": "Ana Sayfa",
+                "nav.services": "Hizmetler",
+                "nav.projects": "Projelerimiz",
+                "nav.reviews": "Yorumlar",
+                "nav.contact": "İletişim",
+                "hero.title": "LÜKSÜN MİMARİSİ",
+                "hero.subtitle": "Hayallerinizi Altın Dokunuşlarla İnşa Ediyoruz",
+                "about.title": "BİZ <span>KİMİZ?</span>",
+                "about.text": "Mutlu Konsept, iç dekorasyon, alçı, boya ve asma tavan alanlarında Türkiye'nin en prestijli projelerine imza atmaktadır. Bizim için her duvar bir tuval, her tavan bir sanat eseridir.",
+                "stats.projects": "Tamamlanan Proje",
+                "stats.satisfaction": "Müşteri Memnuniyeti",
+                "services.title": "UZMANLIK <span>ALANLARIMIZ</span>",
+                "services.paint.title": "Boya & İtalyan Boya",
+                "services.paint.text": "Dekoratif İtalyan boya ve lüks renk kombinasyonları.",
+                "services.plaster.title": "Alçı & Alçıpan",
+                "services.plaster.text": "Kusursuz düzlükte yüzeyler ve bölme duvar sistemleri.",
+                "services.masonry.title": "Duvarcılık",
+                "services.masonry.text": "Sağlam mimari temeller ve estetik duvar örme.",
+                "services.ceiling.title": "Asma Tavan",
+                "services.ceiling.text": "Gizli ışık ve modern aydınlatma uyumlu tavanlar.",
+                "services.wallpaper.title": "Duvar Kağıdı",
+                "services.wallpaper.text": "Lüks dokulu, ithal ve dayanıklı duvar kaplamaları.",
+                "services.exterior.title": "Dış Cephe",
+                "services.exterior.text": "Isı yalıtımı ve modern dış cephe mantolama.",
+                "reviews.title": "MÜŞTERİ <span>DENEYİMLERİ</span>",
+                "reviews.testimonial": "\"Mutlu Konsept ile çalışmak büyük bir ayrıcalıktı. Villamızın tavan ve boya işleri tam istediğimiz gibi lüks bir görünüme kavuştu.\"",
+                "reviews.author": "Meral Akıncı - Villa Sahibi",
+                "reviews.testimonial2": "\"Profesyonel ekip, hızlı dönüş ve kaliteli işçilik. Salonumuz tam istediğimiz gibi tasarlandı.\"",
+                "reviews.author2": "Kerem Yılmaz - Rezidans Sahibi",
+                "reviews.testimonial3": "\"Mutlu Konsept her ayrıntıyı düşündü. Yeni mutfak ve tavan tasarımımız beklediğimizden çok daha şık oldu.\"",
+                "reviews.author3": "Fatma Öztürk - Daire Sahibi",
+                "reviews.testimonial4": "\"İşlerinde titiz, iletişimleri güçlü ve teslimat süreci sorunsuzdu. Evimizde her köşe artık daha lüks görünüyor.\"",
+                "reviews.author4": "Ali Deniz - Villa Sahibi",
+                "contact.title": "BİZE <span>ULAŞIN</span>",
+                "contact.subtitle": "PROJENİZİ BAŞLATALIM",
+                "contact.phone1": "Enis Mutlu: 0534 880 29 31",
+                "contact.instagram": "Instagram: @mutlu.konsept"
+            },
+            en: {
+                "nav.home": "Home",
+                "nav.services": "Services",
+                "nav.projects": "Projects",
+                "nav.reviews": "Reviews",
+                "nav.contact": "Contact",
+                "hero.title": "LUXURY ARCHITECTURE",
+                "hero.subtitle": "We build your dreams with golden touches",
+                "about.title": "WHO <span>WE ARE</span>",
+                "about.text": "Mutlu Konsept delivers prestigious interior decoration, plaster, paint and suspended ceiling projects across Turkey. Every wall is a canvas and every ceiling is a work of art.",
+                "stats.projects": "Projects Completed",
+                "stats.satisfaction": "Customer Satisfaction",
+                "services.title": "OUR <span>EXPERTISE</span>",
+                "services.paint.title": "Paint & Italian Paint",
+                "services.paint.text": "Decorative Italian paint and luxurious color combinations.",
+                "services.plaster.title": "Plaster & Drywall",
+                "services.plaster.text": "Perfectly smooth surfaces and partition wall systems.",
+                "services.masonry.title": "Masonry",
+                "services.masonry.text": "Strong architectural foundations and aesthetic wall work.",
+                "services.ceiling.title": "Suspended Ceiling",
+                "services.ceiling.text": "Ceilings compatible with hidden lighting and modern illumination.",
+                "services.wallpaper.title": "Wallpaper",
+                "services.wallpaper.text": "Luxurious textured, imported and durable wall coverings.",
+                "services.exterior.title": "Exterior",
+                "services.exterior.text": "Thermal insulation and modern exterior cladding.",
+                "reviews.title": "CUSTOMER <span>EXPERIENCES</span>",
+                "reviews.testimonial": "\"Working with Mutlu Konsept was a great privilege. Our villa's ceiling and painting work achieved the luxurious look we wanted.\"",
+                "reviews.author": "Meral Akıncı - Villa Owner",
+                "reviews.testimonial2": "\"Professional team, quick response and quality workmanship. Our living room was designed exactly as we wanted.\"",
+                "reviews.author2": "Kerem Yilmaz - Residence Owner",
+                "reviews.testimonial3": "\"Mutlu Konsept considered every detail. Our new kitchen and ceiling design turned out much more elegant than expected.\"",
+                "reviews.author3": "Fatma Ozturk - Apartment Owner",
+                "reviews.testimonial4": "\"They were meticulous, communication was strong, and the delivery process was flawless. Every corner of our home now looks more luxurious.\"",
+                "reviews.author4": "Ali Deniz - Villa Owner",
+                "contact.title": "GET <span>IN TOUCH</span>",
+                "contact.subtitle": "LET'S START YOUR PROJECT",
+                "contact.phone1": "Enis Mutlu: 0534 880 29 31",
+                "contact.instagram": "Instagram: @mutlu.konsept"
+            },
+            ar: {
+                "nav.home": "الرئيسية",
+                "nav.services": "خدمات",
+                "nav.projects": "مشاريع",
+                "nav.reviews": "آراء",
+                "nav.contact": "اتصل",
+                "hero.title": "هندسة فاخرة",
+                "hero.subtitle": "نبني أحلامك بلمسات ذهبية",
+                "about.title": "من <span>نحن</span>",
+                "about.text": "Mutlu Konsept تقدم مشاريع ديكور داخلي وجبس ودهان وأسقف معلقة مرموقة في جميع أنحاء تركيا. كل جدار هو لوحة وكل سقف عمل فني.",
+                "stats.projects": "مشاريع مكتملة",
+                "stats.satisfaction": "رضا العملاء",
+                "services.title": "خبراتنا <span>الاحترافية</span>",
+                "services.paint.title": "دهان ودهان إيطالي",
+                "services.paint.text": "دهان إيطالي زخرفي وتركيبات ألوان فاخرة.",
+                "services.plaster.title": "جبس و دريوال",
+                "services.plaster.text": "أسطح ناعمة تمامًا وأنظمة جدران فواصل.",
+                "services.masonry.title": "بناء",
+                "services.masonry.text": "أساسات معمارية قوية وعمل جدران جمالي.",
+                "services.ceiling.title": "أسقف معلقة",
+                "services.ceiling.text": "أسقف متوافقة مع الإضاءة المخفية والإضاءة الحديثة.",
+                "services.wallpaper.title": "ورق حائط",
+                "services.wallpaper.text": "أغطية جدران فاخرة ذات ملمس، مستوردة ومتينة.",
+                "services.exterior.title": "الواجهة الخارجية",
+                "services.exterior.text": "عزل حراري وتكسية واجهات حديثة.",
+                "reviews.title": "تجارب <span>العملاء</span>",
+                "reviews.testimonial": "\"كان العمل مع Mutlu Konsept امتيازًا كبيرًا. حصلت غرفة الفيلا على المظهر الفاخر الذي أردناه.\"",
+                "reviews.author": "ميرال أكينجي - مالكة الفيلا",
+                "reviews.testimonial2": "\"فريق محترف، استجابة سريعة وجودة في التنفيذ. تم تصميم غرفة المعيشة كما أردنا تمامًا.\"",
+                "reviews.author2": "كيريم يلماز - مالك عقار",
+                "reviews.testimonial3": "\"فكر Mutlu Konsept في كل التفاصيل. تصميم المطبخ والسقف الجديدان أصبحا أكثر أناقة مما توقعنا.\"",
+                "reviews.author3": "فاطمة أوزتورك - مالكة شقة",
+                "reviews.testimonial4": "\"كانوا دقيقين، وكان التواصل قويًا، وكانت عملية التسليم سلسة. أصبح كل ركن في منزلنا الآن يبدو أكثر فخامة.\"",
+                "reviews.author4": "علي دنيز - مالك فيلا",
+                "contact.title": "تواصل <span>معنا</span>",
+                "contact.subtitle": "لنبدأ مشروعك",
+                "contact.phone1": "Enis Mutlu: 0534 880 29 31",
+                "contact.instagram": "Instagram: @mutlu.konsept"
+            }
+        };
+
+        function setLanguage(lang) {
+            const elements = document.querySelectorAll('[data-i18n]');
+            elements.forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (translations[lang] && translations[lang][key]) {
+                    el.innerHTML = translations[lang][key];
+                }
+            });
+        }
+
+        setLanguage('tr');
+
+        // SCROLL TAKİBİ - Logo Animasyonu için
+        window.onscroll = function() {
+            var body = document.getElementById("body-tag");
+            if (document.body.scrollTop > 50 || document.documentElement.scrollTop > 50) {
+                body.classList.add("scrolled");
+            } else {
+                // Sadece ana sayfadaysak logoyu tekrar büyüt
+                if(!body.classList.contains("not-home")) {
+                    body.classList.remove("scrolled");
+                }
+            }
+        };
+
+        // SAYFA GEÇİŞ SİSTEMİ
+        function switchPage(pageId) {
+            const transition = document.getElementById('page-transition');
+            const body = document.getElementById("body-tag");
+            
+            transition.classList.add('active');
+            
+            setTimeout(() => {
+                document.querySelectorAll('.page').forEach(p => p.classList.remove('active-page'));
+                document.getElementById(pageId).classList.add('active-page');
+                
+                // Sayfa Home değilse logoyu küçük tutmak için sınıf ekle
+                if(pageId !== 'home') {
+                    body.classList.add("not-home");
+                    body.classList.add("scrolled");
+                } else {
+                    body.classList.remove("not-home");
+                    // Eğer sayfa en üstteyse scrolled sınıfını da kaldır ki logo büyüsün
+                    if (window.scrollY < 50) body.classList.remove("scrolled");
+                }
+
+                window.scrollTo(0, 0);
+                setTimeout(() => { transition.classList.remove('active'); }, 100);
+            }, 700);
+        }
+    </script>
+</body>
+</html>
+
+
+    
